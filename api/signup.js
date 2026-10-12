@@ -58,9 +58,13 @@ module.exports = async function handler(req, res) {
       }),
       signal: controller.signal,
     });
-    if (!response.ok) throw new Error("Supabase rejected the signup request.");
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(`Supabase responded ${response.status}: ${detail}`);
+    }
     return res.status(200).json({ ok: true });
-  } catch {
+  } catch (error) {
+    console.error("Signup failed:", error);
     return res
       .status(502)
       .json({ error: "We couldn't complete your signup. Please try again." });
